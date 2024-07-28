@@ -1,13 +1,16 @@
 require('dotenv').config();
 const express = require('express');
-const app = express();
+const connectDB = require('./config/db');
+// Router
+const userRouter = require('./routes/userRoutes');
+
 const port = 3000;
 
-const connectDB = require('./config/db');
+const app = express();
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
+
+app.use(express.json());
+app.use('/auths', userRouter);
 
 connectDB();
 
