@@ -3,6 +3,41 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const { sendOTP } = require('../utils/email');
+const { body, validationResult } = require('express-validator');
+// aws
+const multer = require('multer');
+const multerS3 = require('multer-s3');
+const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const { s3Client } = require('../config/S3Helper');
+// compression image using shap
+const sharp = require('sharp');
+
+// Multer configuration for handling file uploads
+const upload = multer({
+  storage: multerS3({
+    s3: s3Client,
+    bucket: process.env.AWS_S3_BUCKET_NAME,
+    key: function (req, file, cb) {
+      const fileExtension = file.mimetype.split("/")[1];
+      const uniqueKey = `${Date.now().toString()}.${fileExtension}`;
+      cb(null, uniqueKey);
+    },
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    metadata: function (req, file, cb) {
+      cb(null, { fieldName: file.fieldname });
+    },
+  }),
+});
+
+// Function to delete file from S3
+const deleteProfileFromS3 = async (key) => {
+  const deleteParams = {
+    Bucket: process.env.AWS_S3_BUCKET_NAME,
+    Key: key,
+  };
+
+  await s3Client.send(new DeleteObjectCommand(deleteParams));
+};
 
 // REGISTER USER ====================================================================
 exports.register = async (req, res) => {
@@ -263,4 +298,69 @@ exports.setNewPassword = async (req, res) => {
   }
 };
 
+// USER PROFILE ====================================================================
+exports.userProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    res.json(user);
+  } catch (err) {
+    console.error('Error in getting user profile:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
 
+// UPDATE PROFILE ====================================================================
+exports.updateProfile = [
+  // Validate and sanitize inputs
+  body('username').optional().isLength({ min: 3 }).withMessage('Username must be at least 3 characters long'),
+  body('email').optional().isEmail().withMessage('Invalid email address'),
+
+  upload.single('profilePhoto'),
+
+  async (req, res) => {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      const { username, email } = req.body;
+
+      // Check if email is already in use
+      if (email && email !== user.email) {
+        const emailExists = await User.findOne({ email });
+        if (emailExists) {
+          return res.status(400).json({ message: 'Email already in use' });
+        }
+        user.email = email;
+      }
+
+      if (req.file) {
+        if (user.profilePhoto) {
+          const oldImageKey = user.profilePhoto.replace(
+            `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/`,
+            ""
+          );
+          await deleteProfileFromS3(oldImageKey);
+        }
+        user.profilePhoto = req.file.location;
+      }
+
+      if (username) {
+        user.username = username;
+      }
+
+      await user.save();
+      res.json({ message: 'Profile updated successfully', user });
+    } catch (error) {
+      console.error('Error in profile update:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  },
+];
