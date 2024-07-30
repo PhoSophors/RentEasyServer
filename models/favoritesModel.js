@@ -1,7 +1,5 @@
 // models/faovritesModel.js
 
-const User = require("../models/userModel");
-const Post = require("../models/postModel");
 const moongoose = require("mongoose");
 
 const favoritesSchema = new moongoose.Schema({

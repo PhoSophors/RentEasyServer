@@ -7,11 +7,14 @@ const postRouter = require('./routes/postRoutes');
 const favoritesRoutes = require('./routes/favoritesRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 const messageRouter = require('./routes/messageRoutes');
+const createDefaultAdmin = require('./middleware/createDefaultAdminMiddleware');
 
 const port = 3000;
 
 const app = express();
 
+// Create default admin user
+createDefaultAdmin();
 
 app.use(express.json());
 app.use('/auths', userRouter);
