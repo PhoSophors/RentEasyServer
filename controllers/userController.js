@@ -5,39 +5,7 @@ const bcrypt = require('bcryptjs');
 const { sendOTP } = require('../utils/email');
 const { body, validationResult } = require('express-validator');
 // aws
-const multer = require('multer');
-const multerS3 = require('multer-s3');
-const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
-const { s3Client } = require('../config/S3Helper');
-// compression image using shap
-const sharp = require('sharp');
-
-// Multer configuration for handling file uploads
-const upload = multer({
-  storage: multerS3({
-    s3: s3Client,
-    bucket: process.env.AWS_S3_BUCKET_NAME,
-    key: function (req, file, cb) {
-      const fileExtension = file.mimetype.split("/")[1];
-      const uniqueKey = `${Date.now().toString()}.${fileExtension}`;
-      cb(null, uniqueKey);
-    },
-    contentType: multerS3.AUTO_CONTENT_TYPE,
-    metadata: function (req, file, cb) {
-      cb(null, { fieldName: file.fieldname });
-    },
-  }),
-});
-
-// Function to delete file from S3
-const deleteProfileFromS3 = async (key) => {
-  const deleteParams = {
-    Bucket: process.env.AWS_S3_BUCKET_NAME,
-    Key: key,
-  };
-
-  await s3Client.send(new DeleteObjectCommand(deleteParams));
-};
+const { upload, deleteFileFromS3 } = require('../config/S3Helper');
 
 // REGISTER USER ====================================================================
 exports.register = async (req, res) => {
@@ -185,7 +153,12 @@ exports.userLogin = async (req, res) => {
     res.json({ 
       message: "Login successfully",
       accessToken, 
-      refreshToken 
+      refreshToken,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+      }
     });
   } catch (err) {
     console.error('Error in login:', err);
@@ -347,7 +320,7 @@ exports.updateProfile = [
             `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/`,
             ""
           );
-          await deleteProfileFromS3(oldImageKey);
+          await deleteFileFromS3(oldImageKey);
         }
         user.profilePhoto = req.file.location;
       }

@@ -32,6 +32,22 @@ const userSchema = new mongoose.Schema({
   refreshToken: {
     type: String,
   },
+  role: {
+    type: String,
+    enum: ["user", "admin"],
+    default: "user",
+  },
+  posts: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'Post',
+  }],
+  createdAt: {
+    type: Date,
+    default: () => {
+      const date = new Date();
+      return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+    },
+  },
 });
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
