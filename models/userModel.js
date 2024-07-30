@@ -45,6 +45,14 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'Favorites',
   }],
+  messages: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'Message',
+  }],
+  messagedUsers: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+  }],
   createdAt: {
     type: Date,
     default: () => {

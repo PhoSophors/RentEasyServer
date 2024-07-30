@@ -6,29 +6,21 @@ const {
   checkRoleMiddleware,
 } = require("../middleware/authMiddleware");
 
-// Register user
+// Register user ================================================================================================
 router.post("/register", userController.register);
 router.post("/register-verify", userController.verifyOTP);
 router.post("/login", userController.userLogin);
 
-// forgot password
+// forgot password ================================================================================================
 router.post("/request-reset-password", userController.requestResetPassword);
-router.post(
-  "/verify-reset-password-otp",
-  userController.verifyResetPasswordOTP
-);
+router.post("/verify-reset-password-otp", userController.verifyResetPasswordOTP);
 router.post("/set-new-password", userController.setNewPassword);
 
-// Refresh token
+// Refresh token ================================================================================================
 router.post("/refresh-token", userController.refreshToken);
 
-// user profile
+// user profile ================================================================================================
 router.get("/profile", authMiddleware, userController.userProfile);
-router.post(
-  "/update-profile",
-  authMiddleware,
-  checkRoleMiddleware(["user", "admin"]),
-  userController.updateProfile
-);
+router.post("/update-profile", authMiddleware, checkRoleMiddleware(["user", "admin"]), userController.updateProfile);
 
 module.exports = router;

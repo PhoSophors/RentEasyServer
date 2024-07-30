@@ -6,6 +6,7 @@ const userRouter = require('./routes/userRoutes');
 const postRouter = require('./routes/postRoutes');
 const favoritesRoutes = require('./routes/favoritesRoutes');
 const searchRoutes = require('./routes/searchRoutes');
+const messageRouter = require('./routes/messageRoutes');
 
 const port = 3000;
 
@@ -17,6 +18,7 @@ app.use('/auths', userRouter);
 app.use('/posts', postRouter);
 app.use('/favorites', favoritesRoutes);
 app.use('/searchs', searchRoutes);
+app.use('/messages', messageRouter);
 
 connectDB();
 
