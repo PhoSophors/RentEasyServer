@@ -32,10 +32,9 @@ const userSchema = new mongoose.Schema({
   refreshToken: {
     type: String,
   },
-  role: {
-    type: String,
-    enum: ["user", "admin"],
-    default: "user",
+  roles: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Role',
   },
   posts: [{
     type: mongoose.Schema.ObjectId,

@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const postController = require('../controllers/postController');
-const  { authMiddleware, checkRoleMiddleware } = require('../middleware/authMiddleware');
+const { authMiddleware, checkRoleMiddleware } = require('../middleware/authMiddleware');
+
+// Common middleware for authenticated routes with role checking
+const commonMiddleware = [authMiddleware, checkRoleMiddleware(['user', 'admin'])];
 
 // POSTS ================================================================================================
-router.post('/create-post', authMiddleware, checkRoleMiddleware(['user', 'admin']), postController.createPost);
-router.delete('/delete-post/:id', authMiddleware, checkRoleMiddleware(['user', 'admin']), postController.deletePost);
-router.post('/update-post/:id', authMiddleware, checkRoleMiddleware(['user', 'admin']), postController.updatePost);
+router.post('/create-post', commonMiddleware, postController.createPost);
+router.delete('/delete-post/:id', commonMiddleware, postController.deletePost);
+router.post('/update-post/:id', commonMiddleware, postController.updatePost);
 
 // GET POSTS ================================================================================================
 router.get('/get-all-posts', postController.getAllPosts);

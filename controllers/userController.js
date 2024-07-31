@@ -1,4 +1,5 @@
 const User = require('../models/userModel');
+const Role = require('../models/roleModel');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
@@ -56,6 +57,13 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: 'Passwords do not match' });
     }
 
+    // Ensure 'user' role exists
+    let userRole = await Role.findOne({ name: 'user' });
+    if (!userRole) {
+      userRole = new Role({ name: 'user' });
+      await userRole.save();
+    }
+
     const otp = crypto.randomInt(100000, 999999).toString();
     const otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
 
@@ -67,6 +75,7 @@ exports.register = async (req, res) => {
       password: hashedPassword,
       otp,
       otpExpires,
+      roles: [userRole._id],
     });
     await newUser.save();
 

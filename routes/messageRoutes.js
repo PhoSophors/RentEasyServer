@@ -5,15 +5,18 @@ const router = express.Router();
 const messageController = require('../controllers/messageController');
 const { authMiddleware, checkRoleMiddleware } = require('../middleware/authMiddleware');
 
+// Common middleware for all routes
+const commonMiddleware = [authMiddleware, checkRoleMiddleware(['user', 'admin'])];
+
 // MESSAGES ================================================================================================
-router.post('/create', authMiddleware, checkRoleMiddleware(['user', 'admin']), messageController.createMessage);
-router.post('/delete/:id', authMiddleware, checkRoleMiddleware(['user', 'admin']), messageController.deleteMessage);
-router.post('/update/:id', authMiddleware, checkRoleMiddleware(['user', 'admin']), messageController.updateMessage);
+router.post('/create', commonMiddleware, messageController.createMessage);
+router.post('/delete/:id', commonMiddleware, messageController.deleteMessage);
+router.post('/update/:id', commonMiddleware, messageController.updateMessage);
 
 // MARK AS READ MESSAGE ================================================================================================
-router.post('/mark-as-read/:id', authMiddleware, checkRoleMiddleware(['user', 'admin']), messageController.markMessageAsRead);
+router.post('/mark-as-read/:id', commonMiddleware, messageController.markMessageAsRead);
 
 // GET MESSAGES ================================================================================================
-router.get('/get-all-messages', authMiddleware, checkRoleMiddleware(['user', 'admin']), messageController.getAllMessages);
+router.get('/get-all-messages', commonMiddleware, messageController.getAllMessages);
 
 module.exports = router;

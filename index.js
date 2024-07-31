@@ -7,6 +7,8 @@ const postRouter = require('./routes/postRoutes');
 const favoritesRoutes = require('./routes/favoritesRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 const messageRouter = require('./routes/messageRoutes');
+const adminRouter = require('./routes/adminRoutes');
+const roleAndPermissonRoutes = require('./routes/roleAndPermissonRoutes');
 const createDefaultAdmin = require('./middleware/createDefaultAdminMiddleware');
 
 const port = 3000;
@@ -22,6 +24,12 @@ app.use('/posts', postRouter);
 app.use('/favorites', favoritesRoutes);
 app.use('/searchs', searchRoutes);
 app.use('/messages', messageRouter);
+
+// Admin routes
+app.use('/admin', adminRouter);
+
+// role route
+app.use('/roles', roleAndPermissonRoutes);
 
 connectDB();
 
