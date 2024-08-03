@@ -26,5 +26,10 @@
     "multer-s3-transform": "^2.10.3",
     "nodemailer": "^6.9.14",
     "sharp": "^0.33.4"
+  },
+  "devDependencies": {
+    "chai": "^5.1.1",
+    "eslint": "^9.8.0",
+    "mocha": "^10.7.0"
   }
 }

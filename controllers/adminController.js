@@ -10,6 +10,8 @@ exports.getAllUsers = async (req, res) => {
     const userCount = await User.countDocuments();
     
     res.json({
+      status: 'success',
+      message: 'All users fetched',
       userCount: userCount, 
       users: users
     });
@@ -24,12 +26,12 @@ exports.getAllPosts = async (req, res) => {
     const posts = await Post.find();
     const postCount = await Post.countDocuments();
 
-    res.json(
-      {
+    res.json({
+        status: 'success',
+        message: 'All posts fetched successfully',
         postCount: postCount,
         posts: posts
-      }
-    );
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -40,7 +42,14 @@ exports.deleteUser = async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
 
-    res.json({ message: 'User deleted' });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ 
+      status: 'success',
+      message: 'User deleted successfully'
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -51,7 +60,14 @@ exports.deletePost = async (req, res) => {
   try {
     await Post.findByIdAndDelete(req.params.id);
 
-    res.json({ message: 'Post deleted' });
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    res.json({
+      status: 'success',
+      message: 'Post deleted successfully'
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
