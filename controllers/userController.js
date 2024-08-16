@@ -10,7 +10,7 @@ const { upload, deleteFileFromS3 } = require('../config/S3Helper');
 
 // REGISTER USER ====================================================================
 exports.register = async (req, res) => {
-  const { username, email, password, confirmPassword } = req.body;
+  const { username, email, password, confirmPassword, profilePhoto, coverPhoto, bio, location  } = req.body;
 
   try {
     // Check if all required fields are provided
@@ -72,12 +72,22 @@ exports.register = async (req, res) => {
     const newUser = new User({
       username, 
       email,
+      coverPhoto,
+      profilePhoto,
+      bio,
+      location,
       password: hashedPassword,
       otp,
       otpExpires,
       roles: [userRole._id],
     });
-    await newUser.save();
+    
+    try {
+      await newUser.save();
+      console.log('User saved successfully');
+    } catch (error) {
+      console.error('Error saving user:', error);
+    }
 
     await sendOTP(email, otp);
     
@@ -147,12 +157,12 @@ exports.userLogin = async (req, res) => {
 
     // Generate access token
     const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '30m', // shorter lifespan
+      expiresIn: '30d', // shorter lifespan
     });
 
     // Generate refresh token
     const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_REFRESH_SECRET, {
-      expiresIn: '7d', // longer lifespan
+      expiresIn: '70d', // longer lifespan
     });
 
     // Save the refresh token to the database
@@ -297,7 +307,10 @@ exports.updateProfile = [
   body('username').optional().isLength({ min: 3 }).withMessage('Username must be at least 3 characters long'),
   body('email').optional().isEmail().withMessage('Invalid email address'),
 
-  upload.single('profilePhoto'),
+  upload.fields([
+    { name: 'profilePhoto', maxCount: 1 },
+    { name: 'coverPhoto', maxCount: 1 }
+  ]),
 
   async (req, res) => {
     // Check for validation errors
@@ -312,7 +325,7 @@ exports.updateProfile = [
         return res.status(404).json({ message: 'User not found' });
       }
 
-      const { username, email } = req.body;
+      const { username, email, bio, location  } = req.body;
 
       // Check if email is already in use
       if (email && email !== user.email) {
@@ -323,7 +336,7 @@ exports.updateProfile = [
         user.email = email;
       }
 
-      if (req.file) {
+      if (req.files && req.files.profilePhoto) {
         if (user.profilePhoto) {
           const oldImageKey = user.profilePhoto.replace(
             `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/`,
@@ -331,11 +344,30 @@ exports.updateProfile = [
           );
           await deleteFileFromS3(oldImageKey);
         }
-        user.profilePhoto = req.file.location;
+        user.profilePhoto = req.files.profilePhoto[0].location;
+      }
+      
+      if (req.files && req.files.coverPhoto) {
+        if (user.coverPhoto) {
+          const oldImageKey = user.coverPhoto.replace(
+            `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/`,
+            ""
+          );
+          await deleteFileFromS3(oldImageKey);
+        }
+        user.coverPhoto = req.files.coverPhoto[0].location;
       }
 
       if (username) {
         user.username = username;
+      }
+
+      if (bio) {
+        user.bio = bio;
+      }
+
+      if (location) {
+        user.location = location;
       }
 
       await user.save();

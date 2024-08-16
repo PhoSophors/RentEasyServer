@@ -21,13 +21,32 @@ exports.createPost = [
     const images = req.files.map((file) => file.location); // Get S3 URLs
 
     // Validate post
-    if (!title || !content || images.length === 0) {
+    if (
+      !title ||
+      !content ||
+      !contact ||
+      !location ||
+      !price ||
+      !bedrooms ||
+      !bathrooms ||
+      !propertytype ||
+      images.length === 0
+    ) {
       return res.status(400).json({
         status: "Fail to create post",
-        message: "Title, content and images are required",
+        message: "All field are required",
       });
     }
-
+    
+    // Validate propertytype
+    const validPropertyTypes = ["house", "villa", "apartment", "hotel", "condo", "townhouse", "room"];
+    if (!validPropertyTypes.includes(propertytype)) {
+      return res.status(400).json({
+        status: "Fail to create post",
+        message: "Invalid property type. Valid types are: house, villa, apartment, hotel, condo, townhouse, room",
+      });
+    }
+  
     try {
       // Create post
       const newPost = await Post.create({
@@ -40,27 +59,26 @@ exports.createPost = [
         bedrooms,
         bathrooms,
         propertytype,
-        user: req.user._id 
+        user: req.user._id,
       });
 
       // Ensure the posts array exists in the user object
       if (!req.user.posts) {
         req.user.posts = [];
       }
-  
+
       // Add post to user's posts array
       req.user.posts.push(newPost._id);
-  
+
       // Save user
       await req.user.save();
-  
-      res.status(201).json({ 
-        message: 'Post created successfully', 
+
+      res.status(201).json({
+        message: "Post created successfully",
         data: {
           newPost,
         },
       });
-
     } catch (error) {
       console.log("Error:", error);
       res.status(400).json({
@@ -95,11 +113,30 @@ exports.updatePost = [
       const bathrooms = req.body.bathrooms;
       const propertytype = req.body.propertytype;
 
-      // Validate update
-      if (!title || !content || images.length === 0) {
+      // Validate post
+      if (
+        !title ||
+        !content ||
+        !contact ||
+        !location ||
+        !price ||
+        !bedrooms ||
+        !bathrooms ||
+        !propertytype ||
+        images.length === 0
+      ) {
         return res.status(400).json({
-          status: "Fail to update",
-          message: "Title, content and images are required",
+          status: "Fail to create post",
+          message: "All field are required",
+        });
+      }
+      
+      // Validate propertytype
+      const validPropertyTypes = ["house", "villa", "apartment", "hotel", "condo", "townhouse", "room"];
+      if (!validPropertyTypes.includes(propertytype)) {
+        return res.status(400).json({
+          status: "Fail to create post",
+          message: "Invalid property type. Valid types are: house, villa, apartment, hotel, condo, townhouse, room",
         });
       }
 
@@ -225,7 +262,7 @@ exports.getPostById = async (req, res) => {
 
     // Get who posted the post
     const user = await User.findById(post.user);
-    
+
     if (!post) {
       return res.status(404).json({
         status: "fail",
@@ -272,7 +309,7 @@ exports.getPostsByUser = async (req, res) => {
 
       data: {
         postsCount,
-        posts, 
+        posts,
       },
     });
   } catch (error) {
@@ -283,5 +320,37 @@ exports.getPostsByUser = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
+// GET ALL POST BY PROPERTY TYPE ==============================================
+exports.getPostsByPropertyType = async (req, res) => {
+  try {
+    const posts = await Post.find({ propertytype: req.query.propertytype });
+
+    if (!posts.length) {
+      return res.status(404).json({
+        status: "fail",
+        message: "No posts found",
+      });
+    }
+
+    // get count of property type
+    const postsCount = posts.length;
+
+    res.status(200).json({
+      status: "success",
+      message: "Posts retrieved successfully.",
+      data: {
+        postsCount: postsCount,
+        posts,
+      },
+    });
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(400).json({
+      status: "fail",
+      message: "Fail to get posts",
+      error: error.message,
+    });
+  }
+};

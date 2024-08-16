@@ -84,11 +84,13 @@ exports.removeFavorite = async (req, res) => {
 };
 
 // GET FAVORITES =================================================================
+// GET FAVORITES =================================================================
 exports.getFavorites = async (req, res) => {
   try {
-    const favorites = await Favorites.find({ user: req.user._id }).populate(
-      "post"
-    );
+    const favorites = await Favorites.find({ user: req.user._id }).populate("post");
+
+    // Reverse the order of favorites
+    const reversedFavorites = favorites.reverse();
 
     // Favorites count from user document
     const favoritesCount = req.user.favorites.length;
@@ -97,7 +99,7 @@ exports.getFavorites = async (req, res) => {
       status: "success",
       data: {
         favoritesCount,
-        favorites,
+        favorites: reversedFavorites,
       },
     });
   } catch (error) {

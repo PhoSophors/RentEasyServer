@@ -15,5 +15,6 @@ router.post('/update-post/:id', commonMiddleware, postController.updatePost);
 router.get('/get-all-posts', postController.getAllPosts);
 router.get('/get-post/:id', postController.getPostById);
 router.get('/get-user-posts', authMiddleware, postController.getPostsByUser);
+router.get('/get-posts-by-property-type', postController.getPostsByPropertyType);
 
 module.exports = router;

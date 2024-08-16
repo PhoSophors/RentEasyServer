@@ -1,25 +1,27 @@
 // models/postModel.js
 
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const postSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   title: {
     type: String,
-    required: [true, 'Please provide a title'],
+    required: [true, "Please provide a title"],
   },
   content: {
     type: String,
-    required: [true, 'Please provide content'],
+    required: [true, "Please provide content"],
   },
-  images: [{
-    type: String,
-    required: true,
-  }],
+  images: [
+    {
+      type: String,
+      required: true,
+    },
+  ],
   contact: {
     type: String,
     required: true,
@@ -44,6 +46,7 @@ const postSchema = new mongoose.Schema({
   propertytype: {
     type: String,
     required: true,
+    enum: ["house", "vila", "apartment", "hotel", "condo", "townhouse", "room"],
   },
   createdAt: {
     type: Date,
@@ -54,6 +57,6 @@ const postSchema = new mongoose.Schema({
   },
 });
 
-const Post = mongoose.model('Post', postSchema);
+const Post = mongoose.model("Post", postSchema);
 
 module.exports = Post;
