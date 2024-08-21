@@ -3,11 +3,12 @@
 const moongoose = require("mongoose");
 
 const favoritesSchema = new moongoose.Schema({
-  user: {
+  user: [{
     type: moongoose.Schema.ObjectId,
     ref: "User",
     required: true,
-  },
+  }],
+
   post: {
     type: moongoose.Schema.ObjectId,
     ref: "Post",

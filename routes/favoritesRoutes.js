@@ -10,6 +10,6 @@ router.post("/add-favorite/:postId", authMiddleware, checkRoleMiddleware(['user'
 router.post('/remove-favorite/:postId', authMiddleware, checkRoleMiddleware(['user', 'admin']),  favoritesController.removeFavorite);
 
 // GET FAVORITES =================================================================================================
-router.get('/get-favorites', authMiddleware, checkRoleMiddleware(['user', 'admin']), favoritesController.getFavorites);
+router.get('/get-favorites', authMiddleware, checkRoleMiddleware(['user', 'admin']), favoritesController.getAllFavoritesByUserAdd);
 
 module.exports = router;

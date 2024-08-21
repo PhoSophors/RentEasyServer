@@ -3,11 +3,11 @@
 const mongoose = require("mongoose");
 
 const postSchema = new mongoose.Schema({
-  user: {
+  user: [{
     type: mongoose.Schema.ObjectId,
     ref: "User",
     required: true,
-  },
+  }],
   title: {
     type: String,
     required: [true, "Please provide a title"],
@@ -46,7 +46,7 @@ const postSchema = new mongoose.Schema({
   propertytype: {
     type: String,
     required: true,
-    enum: ["house", "vila", "apartment", "hotel", "condo", "townhouse", "room"],
+    enum: ["house", "villa", "apartment", "hotel", "condo", "townhouse", "room"],
   },
   createdAt: {
     type: Date,

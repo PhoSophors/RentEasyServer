@@ -79,7 +79,7 @@ exports.register = async (req, res) => {
       password: hashedPassword,
       otp,
       otpExpires,
-      roles: [userRole._id],
+      roles: [userRole],
     });
     
     try {
@@ -269,16 +269,23 @@ exports.verifyResetPasswordOTP = async (req, res) => {
 exports.setNewPassword = async (req, res) => {
   const { email, newPassword, confirmPassword } = req.body;
 
+  // Input validation
+  if (!email || !newPassword || !confirmPassword) {
+    return res.status(400).json({ message: 'Email, new password, and confirmation password are required' });
+  }
+
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ message: 'Passwords do not match' });
+  }
+
   try {
+    // Find the user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: 'User not found' });
     }
 
-    if (newPassword !== confirmPassword) {
-      return res.status(400).json({ message: 'Passwords do not match' });
-    }
-
+    // Hash and set the new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
@@ -289,6 +296,7 @@ exports.setNewPassword = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 // USER PROFILE ====================================================================
 exports.userProfile = async (req, res) => {

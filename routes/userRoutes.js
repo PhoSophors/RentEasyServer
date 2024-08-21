@@ -13,7 +13,7 @@ router.post("/login", userController.userLogin);
 
 // forgot password ================================================================================================
 router.post("/request-reset-password", userController.requestResetPassword);
-router.post("/verify-reset-password-otp", userController.verifyResetPasswordOTP);
+router.post("/verify-reset-password-otp", userController.verifyResetPasswordOTP); 
 router.post("/set-new-password", userController.setNewPassword);
 
 // Refresh token ================================================================================================

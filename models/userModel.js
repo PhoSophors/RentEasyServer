@@ -48,10 +48,14 @@ const userSchema = new mongoose.Schema({
   refreshToken: {
     type: String,
   },
-  roles: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Role',
-  },
+  // roles: [{
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'Role',
+  // }],
+  roles: [{
+    name: { type: String, required: true },
+    permissions: { type: [String], default: [] }
+  }],
   posts: [{
     type: mongoose.Schema.ObjectId,
     ref: 'Post',

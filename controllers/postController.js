@@ -229,7 +229,7 @@ exports.deletePost = async (req, res) => {
 // GET ALL POSTS ==============================================================
 exports.getAllPosts = async (req, res) => {
   try {
-    const posts = await Post.find();
+    const posts = await Post.find().populate('user');
 
     if (!posts) {
       return res.status(404).json({
@@ -238,10 +238,14 @@ exports.getAllPosts = async (req, res) => {
       });
     }
 
+    // all post count
+    const postsCount = posts.length;
+
     res.status(200).json({
       status: "success",
       message: "Posts retrieved successfully.",
       data: {
+        postsCount: postsCount,
         posts,
       },
     });
@@ -258,10 +262,7 @@ exports.getAllPosts = async (req, res) => {
 // GET POST BY ID ==============================================================
 exports.getPostById = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
-
-    // Get who posted the post
-    const user = await User.findById(post.user);
+    const post = await Post.findById(req.params.id).populate('user');
 
     if (!post) {
       return res.status(404).json({
@@ -274,7 +275,6 @@ exports.getPostById = async (req, res) => {
       status: "success",
       message: "Post retrieved successfully.",
       data: {
-        user,
         post,
       },
     });
@@ -325,7 +325,7 @@ exports.getPostsByUser = async (req, res) => {
 // GET ALL POST BY PROPERTY TYPE ==============================================
 exports.getPostsByPropertyType = async (req, res) => {
   try {
-    const posts = await Post.find({ propertytype: req.query.propertytype });
+    const posts = await Post.find({ propertytype: req.query.propertytype }).populate('user');
 
     if (!posts.length) {
       return res.status(404).json({

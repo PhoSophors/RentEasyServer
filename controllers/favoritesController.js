@@ -84,29 +84,40 @@ exports.removeFavorite = async (req, res) => {
 };
 
 // GET FAVORITES =================================================================
-// GET FAVORITES =================================================================
-exports.getFavorites = async (req, res) => {
+exports.getAllFavoritesByUserAdd = async (req, res) => {
   try {
-    const favorites = await Favorites.find({ user: req.user._id }).populate("post");
+    const favorites = await Favorites.find({ user: req.user._id })
+      .populate({
+        path: "post",
+        populate: {
+          path: "user", // Populate the user field within the post
+          model: "User", // Specify the model if necessary
+        },
+      })
+      .populate("user"); // Populate the user field in the favorites
 
-    // Reverse the order of favorites
-    const reversedFavorites = favorites.reverse();
+    if (!favorites.length) {
+      return res.status(404).json({
+        status: "fail",
+        message: "No favorites found.",
+      });
+    }
 
-    // Favorites count from user document
-    const favoritesCount = req.user.favorites.length;
+    const favoritesCount = favorites.length;
 
     res.status(200).json({
       status: "success",
+      message: "Favorites retrieved successfully.",
       data: {
         favoritesCount,
-        favorites: reversedFavorites,
+        favorites,
       },
     });
   } catch (error) {
     console.log("Error:", error);
     res.status(400).json({
       status: "fail",
-      message: "Fail to get favorites",
+      message: "Fail to get all favorites",
       error: error.message,
     });
   }

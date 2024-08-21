@@ -27,7 +27,8 @@ async function createDefaultAdmin() {
       username: 'admin',
       email: process.env.ADMIN_EMAIL,
       password: hashedPassword,
-      roles: [new mongoose.Types.ObjectId(adminRole._id)],
+      // roles: [new mongoose.Types.ObjectId(adminRole._id)],
+      roles: [adminRole],
       isVerified: true,
     });
 
