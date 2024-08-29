@@ -2,10 +2,12 @@ const mongoose = require("mongoose");
 const Post = require("../models/postModel");
 const User = require("../models/userModel");
 const { upload, deleteFileFromS3 } = require("../config/S3Helper");
+const { CompleteMultipartUploadRequestFilterSensitiveLog } = require("@aws-sdk/client-s3");
 
 // CREATE POST =================================================================
+
 exports.createPost = [
-  upload.array("images", 3), // Limit to 3 images
+  upload.array("images", 6), // Limit to 3 images
 
   async (req, res) => {
     const {
@@ -20,6 +22,9 @@ exports.createPost = [
     } = req.body;
     const images = req.files.map((file) => file.location); // Get S3 URLs
 
+     // Check if req.files is defined and is an array
+    //  const images = req.files && Array.isArray(req.files) ? req.files.map((file) => file.location) : [];
+
     // Validate post
     if (
       !title ||
@@ -29,8 +34,8 @@ exports.createPost = [
       !price ||
       !bedrooms ||
       !bathrooms ||
-      !propertytype ||
-      images.length === 0
+      !propertytype 
+      // images.length === 0
     ) {
       return res.status(400).json({
         status: "Fail to create post",
@@ -69,6 +74,8 @@ exports.createPost = [
 
       // Add post to user's posts array
       req.user.posts.push(newPost._id);
+      const populatedPost = await newPost.populate('user');
+      await req.user.save();
 
       // Save user
       await req.user.save();

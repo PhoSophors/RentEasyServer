@@ -312,8 +312,8 @@ exports.userProfile = async (req, res) => {
 // UPDATE PROFILE ====================================================================
 exports.updateProfile = [
   // Validate and sanitize inputs
-  body('username').optional().isLength({ min: 3 }).withMessage('Username must be at least 3 characters long'),
-  body('email').optional().isEmail().withMessage('Invalid email address'),
+  // body('username').optional().isLength({ min: 3 }).withMessage('Username must be at least 3 characters long'),
+  // body('email').optional().isEmail().withMessage('Invalid email address'),
 
   upload.fields([
     { name: 'profilePhoto', maxCount: 1 },

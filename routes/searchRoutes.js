@@ -5,6 +5,6 @@ const router = express.Router();
 const searchController = require('../controllers/searchController');
 
 // SEARCH ================================================================================================
-router.get('/', searchController.search);
+router.get('/searchsPostAndUser', searchController.search);
 
 module.exports = router;

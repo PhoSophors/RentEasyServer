@@ -22,13 +22,15 @@ exports.search = async (req, res) => {
     const users = await User.find({ username: { $regex: query, $options: 'i' } });
     const posts = await Post.find({ 
       $or: [
+        { title: { $regex: query, $options: 'i' } },
         { content: { $regex: query, $options: 'i' } },
-        { location: { $regex: query, $options: 'i' } }
+        { location: { $regex: query, $options: 'i' } },
+        { propertytype: { $regex: query, $options: 'i' } }
       ]
-    });
+    }).populate('user');
 
-    console.log("Found Users:", users); // Log the found users
-    console.log("Found Posts:", posts); // Log the found posts
+    console.log("Found Users:", users); 
+    console.log("Found Posts:", posts); 
 
     res.status(200).json({
       status: 'success',

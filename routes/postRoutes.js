@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const postController = require('../controllers/postController');
 const { authMiddleware, checkRoleMiddleware } = require('../middleware/authMiddleware');
+const { upload } = require('../config/S3Helper');
 
 // Common middleware for authenticated routes with role checking
 const commonMiddleware = [authMiddleware, checkRoleMiddleware(['user', 'admin'])];
