@@ -3,7 +3,7 @@
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
-  const uri = process.env.MONGODB_URI;
+  const uri = "mongodb://localhost:27017/RentEasy";
   if (!uri) {
     console.error('MONGODB_URI environment variable is not set');
     process.exit(1);

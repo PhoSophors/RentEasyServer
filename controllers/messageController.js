@@ -172,3 +172,58 @@ exports.markMessageAsRead = async (req, res) => {
     });
   }
 };
+exports.getAllUserMessages = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Find the authenticated user and populate their messages with sender and receiver details
+    const user = await User.findById(userId).populate({
+      path: 'messages',
+      match: {
+        $or: [
+          { senderId: userId },
+          { receiverId: userId }
+        ]
+      },
+      populate: [
+        { path: 'senderId' }, // Populate all fields for sender
+        { path: 'receiverId' }  // Populate all fields for receiver
+      ]
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        status: "fail",
+        message: "User not found",
+      });
+    }
+
+    // Extract the IDs of users who have exchanged messages with the authenticated user
+    const messagedUserIds = user.messages.map(message => {
+      return message.senderId._id.toString() === userId.toString()
+        ? message.receiverId._id.toString()
+        : message.senderId._id.toString();
+    });
+
+    // Remove duplicate user IDs
+    const uniqueMessagedUserIds = [...new Set(messagedUserIds)];
+
+    // Find all users who have exchanged messages with the authenticated user
+    const messagedUsers = await User.find({ _id: { $in: uniqueMessagedUserIds } });
+
+    // Return all fields of the user
+    res.status(200).json({
+      status: "success",
+      results: messagedUsers.length,
+      data: {
+        users: messagedUsers
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching users with messages:', error);
+    res.status(400).json({
+      status: "fail",
+      message: error.message,
+    });
+  }
+};

@@ -18,5 +18,6 @@ router.post('/mark-as-read/:id', commonMiddleware, messageController.markMessage
 
 // GET MESSAGES ================================================================================================
 router.get('/get-all-messages', commonMiddleware, messageController.getAllMessages);
+router.get('/get-all-user-message', commonMiddleware, messageController.getAllUserMessages);
 
 module.exports = router;

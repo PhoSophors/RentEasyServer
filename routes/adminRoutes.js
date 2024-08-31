@@ -6,7 +6,7 @@ const adminController = require('../controllers/adminController');
 const { authMiddleware, checkRoleMiddleware } = require('../middleware/authMiddleware');
 
 // GET ROUTE =========================================================
-router.get('/all-users', authMiddleware, checkRoleMiddleware(['admin']), adminController.getAllUsers);
+router.get('/all-users', authMiddleware, checkRoleMiddleware(['admin', 'user']), adminController.getAllUsers);
 router.get('/all-posts', authMiddleware, checkRoleMiddleware(['admin']), adminController.getAllPosts);
 
 // DELETE ROUTE =========================================================
