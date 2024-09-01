@@ -3,18 +3,18 @@
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
-  const uri = "mongodb://localhost:27017/RentEasy";
+  const uri = process.env.MONGODB_URI;
+
   if (!uri) {
     console.error('MONGODB_URI environment variable is not set');
     process.exit(1);
   }
 
   console.log('Attempting to connect to MongoDB...');
+
   try {
-    await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    // Removed deprecated options
+    await mongoose.connect(uri);
     console.log('MongoDB connected successfully');
   } catch (err) {
     console.error('Error connecting to MongoDB:', err.message);
