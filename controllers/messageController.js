@@ -4,9 +4,33 @@ const Message = require("../models/messageModel");
 const User = require("../models/userModel");
 
 // GET ALL MESSAGES ================================
+// exports.getAllMessages = async (req, res) => {
+//   try {
+//     const messages = await Message.find();
+
+//     res.status(200).json({
+//       status: "success",
+//       results: messages.length,
+//       data: {
+//         messages,
+//       },
+//     });
+//   } catch (error) {
+//     res.status(400).json({
+//       status: "fail",
+//       message: error.message,
+//     });
+//   }
+// };
+
 exports.getAllMessages = async (req, res) => {
   try {
-    const messages = await Message.find();
+    const userId = req.user._id; // Use the authenticated user's ID
+
+    // Find messages where the authenticated user is either the sender or the receiver
+    const messages = await Message.find({
+      $or: [{ senderId: userId }, { receiverId: userId }]
+    });
 
     res.status(200).json({
       status: "success",
@@ -23,34 +47,55 @@ exports.getAllMessages = async (req, res) => {
   }
 };
 
+
 // CREATE MESSAGE ================================
 exports.createMessage = async (req, res) => {
   try {
     const { senderId, receiverId, content } = req.body;
 
     // Check if the sender and receiver exist
+    const sender = await User.findById(senderId);
+    const receiver = await User.findById(receiverId);
+
+    if (!sender || !receiver) {
+      return res.status(400).json({
+        status: "fail",
+        message: "Sender or receiver does not exist",
+      });
+    }
+
+ // Prevent sender from sending a message to themselves
+ if (senderId === receiverId) {
+    return res.status(400).json({
+      status: "fail",
+      message: "Sender cannot send a message to themselves",
+    });
+  }
+
+    // Create a new message
     const newMessage = await Message.create({
       senderId,
       receiverId,
       content,
     });
 
-    // Set User id that sent the message in the sender's messages array
+    // Update the sender's messages array
     await User.findByIdAndUpdate(senderId, {
       $push: { messages: newMessage._id },
       $addToSet: { messagedUsers: receiverId },
     });
 
-    // Set User id that received the message in the receiver's messages array
-    await User.findByIdAndUpdate(receiverId, {
-      $push: { messages: newMessage._id },
-      $addToSet: { messagedUsers: senderId },
-    });
+    // If senderId and receiverId are different, update the receiver's messages array
+    if (senderId !== receiverId) {
+      await User.findByIdAndUpdate(receiverId, {
+        $push: { messages: newMessage._id },
+        $addToSet: { messagedUsers: senderId },
+      });
+    }
 
     res.status(201).json({
       status: "success",
       data: {
-        status: "success",
         message: newMessage,
       },
     });
@@ -62,7 +107,6 @@ exports.createMessage = async (req, res) => {
     });
   }
 };
-
 // UPDATE MESSAGE ================================
 exports.updateMessage = async (req, res) => {
   try {
